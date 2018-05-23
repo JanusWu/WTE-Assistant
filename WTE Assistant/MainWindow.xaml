@@ -3,10 +3,58 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:WTE_Assistant"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"        
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="350" Width="600" WindowStyle="None" ResizeMode="NoResize">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--Custom Windows Title Bar-->
+        <materialDesign:ColorZone Mode="PrimaryDark" Grid.Row="0" Padding="24 8" materialDesign:ShadowAssist.ShadowDepth="Depth3" MouseMove="ColorZone_MouseMove">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" FontSize="24">WTE Assistant</TextBlock>
+            </StackPanel>
+        </materialDesign:ColorZone>
+        <Label Grid.Row="0" Width="30" FontSize="16" Margin="0 0 -550 0" Padding="10 15" Foreground="White" MouseDown="WindowClose">X</Label>
+        <!--VS Location-->
+        <TextBox materialDesign:HintAssist.Hint="VS Location" Grid.Row="1" Margin="16 4" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+        <!--Reset Time-->
+        <ComboBox materialDesign:HintAssist.Hint="Reset Time" Grid.Row="2"  Margin="16 4" Style="{StaticResource MaterialDesignFloatingHintComboBox}">
+            <ComboBoxItem>1</ComboBoxItem>
+            <ComboBoxItem>2</ComboBoxItem>
+            <ComboBoxItem>3</ComboBoxItem>
+            <ComboBoxItem>4</ComboBoxItem>
+            <ComboBoxItem>5</ComboBoxItem>
+        </ComboBox>
+        <!--Start button-->
+        <Button Grid.Row="3" FontSize="24" Width="120" Height="40" Margin="48" Style="{StaticResource MaterialDesignRaisedDarkButton}" 
+                ToolTip="Resource name: MaterialDesignRaisedLightDarkButton" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+            START
+        </Button>
+        <!--Progress Bar-->
+        <ProgressBar Grid.Row="4" Value="50" Margin="16 8 16 2" materialDesign:TransitionAssist.DisableTransitions="True" />
+        <!--Progress Information-->
+        <Grid Grid.Row="5" Margin="14 0 14 0">
+            <Label Name="DllInfor" Grid.Row="0" FontSize="10">DLL: Microsoft.VisualStudio.Web.Editors.IntegrationTests.dll</Label>
+            <Label Name="Results" Grid.Row="1" Margin="0 15" FontSize="10">Results: 346/460 passed; 81 failed; 23 not executed.</Label>
+            <Label Name="Running" Grid.Row="2" Margin="0 30" FontSize="10">Running Test: VSTest_Html_FormatOnPaste_WithMultipleScriptBlocks</Label>
+        </Grid>
+
     </Grid>
 </Window>

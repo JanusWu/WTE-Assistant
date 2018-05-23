@@ -24,5 +24,18 @@ namespace WTE_Assistant
         {
             InitializeComponent();
         }
+
+        private void ColorZone_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                this.DragMove();
+            }
+        }
+
+        private void WindowClose(object sender, MouseEventArgs e)
+        {
+            this.Close();
+        }
     }
 }

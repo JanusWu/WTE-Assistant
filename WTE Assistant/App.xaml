@@ -4,6 +4,18 @@
              xmlns:local="clr-namespace:WTE_Assistant"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Indigo.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.blue.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- primary -->
+            <SolidColorBrush x:Key="PrimaryBlue" Color="#744CE0"/>
+            <!-- accent -->
+            <SolidColorBrush x:Key="SecondaryBlue" Color="#5C5B5E"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
