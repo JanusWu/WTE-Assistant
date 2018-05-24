@@ -8,23 +8,36 @@ namespace WTE_Assistant
 {
     public class IntegrationDll
     {
-        string DllName;
-        int TotalTestNum;
-        int PassedTestNum;
-        int NotExecutedTestNum;
-        int FailedTestNum;
+        public string DllName { get; set; }
+
+        public string DllPath { get; set; }
+
+        public int TotalTestNum { get; set; }
+
+        public int PassedTestNum { get; set; }
+
+        public int NotExecutedTestNum { get; set; }
+
+        public int FailedTestNum { get; set; }
 
         public List<Test> Tests;
+
         public List<Test> FailedTests;
     }
 
     public class Test
     {
-        string TestName;
-        string ErrorMessage;
-        string ErrorStackTrace;
-        string DllName;
-        TestResult Result;
+        public string TestName { get; set; }
+
+        public string TestID { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        public string ErrorStackTrace { get; set; }
+
+        public string DllName { get; set; }
+
+        public TestResult Result { get; set; }
     }
 
     public enum TestResult
