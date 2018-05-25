@@ -1,4 +1,4 @@
-﻿<Window x:Class="WTE_Assistant.MainWindow"
+﻿<Window x:Name="icon" x:Class="WTE_Assistant.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +13,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"        
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="600" WindowStyle="None" ResizeMode="NoResize">
+        Title="WTE Assistant" Height="350" Width="600" WindowStyle="None" ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -33,10 +33,10 @@
         </materialDesign:ColorZone>
         <Label Grid.Row="0" Width="30" FontSize="16" Margin="0 0 -550 0" Padding="10 15" Foreground="White" MouseDown="WindowClose">X</Label>
         <!--VS Location-->
-        <TextBox materialDesign:HintAssist.Hint="VS Location" Grid.Row="1" Margin="16 4" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+        <TextBox Name="VSLocation" materialDesign:HintAssist.Hint="VS Location" Grid.Row="1" Margin="16 4" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
         <!--Reset Time-->
-        <ComboBox materialDesign:HintAssist.Hint="Reset Time" Grid.Row="2"  Margin="16 4" Style="{StaticResource MaterialDesignFloatingHintComboBox}">
-            <ComboBoxItem>1</ComboBoxItem>
+        <ComboBox Name="ResetTime" materialDesign:HintAssist.Hint="Reset Time" Grid.Row="2"  Margin="16 4" Style="{StaticResource MaterialDesignFloatingHintComboBox}">
+            <ComboBoxItem IsSelected="True">1</ComboBoxItem>
             <ComboBoxItem>2</ComboBoxItem>
             <ComboBoxItem>3</ComboBoxItem>
             <ComboBoxItem>4</ComboBoxItem>
@@ -44,11 +44,11 @@
         </ComboBox>
         <!--Start button-->
         <Button Grid.Row="3" FontSize="24" Width="120" Height="40" Margin="48" Style="{StaticResource MaterialDesignRaisedDarkButton}" 
-                ToolTip="Resource name: MaterialDesignRaisedLightDarkButton" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                ToolTip="Resource name: MaterialDesignRaisedLightDarkButton" materialDesign:ShadowAssist.ShadowDepth="Depth2" Click="StartButton_Click">
             START
         </Button>
         <!--Progress Bar-->
-        <ProgressBar Grid.Row="4" Value="50" Margin="16 8 16 2" materialDesign:TransitionAssist.DisableTransitions="True" />
+        <ProgressBar Name="ResetProgress" Grid.Row="4" Value="60" Margin="16 8 16 2" materialDesign:TransitionAssist.DisableTransitions="True" />
         <!--Progress Information-->
         <Grid Grid.Row="5" Margin="14 0 14 0">
             <Label Name="DllInfor" Grid.Row="0" FontSize="10">DLL: Microsoft.VisualStudio.Web.Editors.IntegrationTests.dll</Label>

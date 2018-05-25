@@ -37,5 +37,14 @@ namespace WTE_Assistant
         {
             this.Close();
         }
+
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            int resetTime = Int32.Parse(this.ResetTime.SelectedValue.ToString());
+            string vsLocation = this.VSLocation.ToString();
+
+            WTEHelper wteHelper = new WTEHelper(resetTime, vsLocation);
+            wteHelper.Start();
+        }
     }
 }

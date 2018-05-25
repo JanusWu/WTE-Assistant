@@ -33,14 +33,18 @@ namespace WTE_Assistant
 
         public string ErrorMessage { get; set; }
 
-        public string ErrorStackTrace { get; set; }
+        public string StackTrace { get; set; }
 
         public string DllName { get; set; }
 
-        public TestResult Result { get; set; }
+        public string Outcome { get; set; }
+
+        public string AssemblyPathName { get; set; }
+
+        public string FullClassName { get;set; }
     }
 
-    public enum TestResult
+    public enum Outcome
     {
         Passed,
         Failed,
