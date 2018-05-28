@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WTE_Assistant
 {
-    public class IntegrationDll
+    public class IntegrationDllResult
     {
         public string DllName { get; set; }
 
@@ -20,12 +20,12 @@ namespace WTE_Assistant
 
         public int FailedTestNum { get; set; }
 
-        public List<Test> Tests;
+        public List<TestResult> TestResults;
 
-        public List<Test> FailedTests;
+        public List<TestResult> FailedTestResults;
     }
 
-    public class Test
+    public class TestResult
     {
         public string TestName { get; set; }
 

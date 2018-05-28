@@ -13,46 +13,93 @@ namespace WTE_Assistant
     {
         public static string HOMEDRIVE = System.Environment.GetEnvironmentVariable("HOMEDRIVE");
         public static string WOR = System.Environment.GetEnvironmentVariable("WOR");
-        public static string IntegrationTestsDir = HOMEDRIVE + "\\TestBin\\IntegrationTests";
-        public static string TestResultsDir = IntegrationTestsDir + "\\TestResults";
+        public static string IntegrationTestsDir = HOMEDRIVE + "\\TestBin\\IntegrationTests\\";
+        public static string TestResultsDir = IntegrationTestsDir + "\\TestResults\\";
         public static string VSTestConsoleEnd = @"\Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe";
 
         public string VSLocation = null;
-        public int ResetTime = 1;
+        public int MaxResetTime = 1;
 
-        public WTEHelper(int resetTime, string vsLocation)
+        public WTEHelper(int maxResetTime, string vsLocation)
         {
             //set the reset time
-            this.ResetTime = resetTime;
+            this.MaxResetTime = maxResetTime;
             this.VSLocation = vsLocation;
         }
         
         public void Start()
         {
-            List<IntegrationDll> IntegrationDlls = GetIntegrationDlls(GetDllResultFileList());
-            ResetFailedTests(IntegrationDlls, ResetTime);
+            List<IntegrationDllResult> IntegrationDllResults = GetIntegrationDllResults(GetDllResultFileList());
+            ResetFailedTests(IntegrationDllResults);
+            ShowResults(IntegrationDllResults);
         }
 
         /// <summary>
         /// Reset all failed tests
         /// </summary>
-        /// <param name="IntegrationDlls"></param>
-        public void ResetFailedTests(List<IntegrationDll> IntegrationDlls, int resetTime)
+        /// <param name="IntegrationDllResults"></param>
+        public void ResetFailedTests(List<IntegrationDllResult> IntegrationDllResults)
         {
-            foreach(IntegrationDll integrationDll in IntegrationDlls)
+            foreach(IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
             {
-               foreach(Test test in integrationDll.FailedTests)
+               foreach(TestResult test in IntegrationDllResult.FailedTestResults)
                 {
-                    //1. 判断是否是Side by side的环境
-                    //2. 初始化reset命令
-                    //3. reset case，并收集结果
-                    //4. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
-                    //5. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
-                }            
-               
+                    //1. 初始化reset命令
+                    StringBuilder resetCommand = new StringBuilder();
+                    resetCommand.Append("\"" + VSLocation + VSTestConsoleEnd + "\"");
+                    resetCommand.Append(" /TestCaseFilter:Name~" + test.TestName);
+                    resetCommand.Append(" \"" + IntegrationTestsDir + test.DllName + "\"");
+                    resetCommand.Append(" /logger:trx");
+
+                    //2. reset case，并收集结果
+                    //3. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
+                    //4. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
+                    int resetTime = 1;
+                    while(resetTime <= MaxResetTime)
+                    {
+                        ResetFailedTest(test);
+                        UpdateTestResult(test);
+                        resetTime++;
+
+                        if (test.Outcome.Equals("Passed"))
+                        {
+                            IntegrationDllResult.FailedTestNum--;
+                            IntegrationDllResult.PassedTestNum++;
+
+                            //TODO: 继续reset下一条case
+                        }
+                    }                         
+                }
             }
 
-            //输出结果到UI （Html或者WPF界面）
+            //TODO: 输出结果到UI （Html或者WPF界面）
+        }
+
+        /// <summary>
+        /// Reset Failed Test
+        /// </summary>
+        /// <param name="test"></param>
+        public void ResetFailedTest(TestResult test)
+        {
+            //TODO: Implementation
+        }
+
+        /// <summary>
+        /// Read the new trx file and update the test result
+        /// </summary>
+        /// <param name="test"></param>
+        public void UpdateTestResult(TestResult test)
+        {
+            //TODO: Implementation
+        }
+
+        /// <summary>
+        /// Show all results on UI
+        /// </summary>
+        /// <param name="IntegrationDllResults"></param>
+        public void ShowResults(List<IntegrationDllResult> IntegrationDllResults)
+        {
+            //TODO: Implementation
         }
 
         /// <summary>
@@ -82,16 +129,16 @@ namespace WTE_Assistant
         /// </summary>
         /// <param name="DllResultFileList"></param>
         /// <returns></returns>
-        public List<IntegrationDll> GetIntegrationDlls(List<FileInfo> DllResultFileList)
+        public List<IntegrationDllResult> GetIntegrationDllResults(List<FileInfo> DllResultFileList)
         {
-            List<IntegrationDll> IntegrationDlls = new List<IntegrationDll>();
+            List<IntegrationDllResult> IntegrationDllResults = new List<IntegrationDllResult>();
 
             foreach (FileInfo DllResultFile in DllResultFileList)
             {
-                IntegrationDlls.Add(GetIntegrationDll(DllResultFile));
+                IntegrationDllResults.Add(GetIntegrationDllResult(DllResultFile));
             }
 
-            return IntegrationDlls;
+            return IntegrationDllResults;
         }
 
         /// <summary>
@@ -99,9 +146,9 @@ namespace WTE_Assistant
         /// </summary>
         /// <param name="DllResultFile"></param>
         /// <returns></returns>
-        public IntegrationDll GetIntegrationDll(FileInfo DllResultFile)
+        public IntegrationDllResult GetIntegrationDllResult(FileInfo DllResultFile)
         {
-            IntegrationDll integrationDll = new IntegrationDll();
+            IntegrationDllResult IntegrationDllResult = new IntegrationDllResult();
 
             try
             {
@@ -119,7 +166,7 @@ namespace WTE_Assistant
                              ).ToList();
 
                 string[] sArray = testDefinitions[0].codeBase.Split('\\');
-                integrationDll.DllName = sArray[sArray.Length - 1];
+                IntegrationDllResult.DllName = sArray[sArray.Length - 1];
 
                 var results = (from utr in doc.Descendants(ns + "UnitTestResult")
                                let executionId = utr.Attribute("executionId").Value
@@ -127,7 +174,7 @@ namespace WTE_Assistant
                                let stackTrace = utr.Descendants(ns + "StackTrace").FirstOrDefault()
                                let st = DateTime.Parse(utr.Attribute("startTime").Value).ToUniversalTime()
                                let et = DateTime.Parse(utr.Attribute("endTime").Value).ToUniversalTime()
-                               select new Test()
+                               select new TestResult()
                                {
                                    AssemblyPathName = (from td in testDefinitions where td.executionId == executionId select td.codeBase).Single(),
                                    FullClassName = (from td in testDefinitions where td.executionId == executionId select td.className).Single(),
@@ -135,21 +182,21 @@ namespace WTE_Assistant
                                    TestName = utr.Attribute("testName").Value,
                                    ErrorMessage = message == null ? "" : message.Value,
                                    StackTrace = stackTrace == null ? "" : stackTrace.Value,
-                                   DllName = integrationDll.DllName,
+                                   DllName = IntegrationDllResult.DllName,
                                    TestID = executionId
                                }
                                ).OrderBy(r => r.Outcome).
                                  ThenBy(r => r.TestName).
                                  ThenBy(r => r.FullClassName);
 
-                integrationDll.Tests = results.ToList();
-                integrationDll.FailedTests = integrationDll.Tests.Where(n => n.Outcome.Equals("Failed")).ToList();
-                integrationDll.DllName = sArray[sArray.Length - 1];
+                IntegrationDllResult.TestResults = results.ToList();
+                IntegrationDllResult.FailedTestResults = IntegrationDllResult.TestResults.Where(n => n.Outcome.Equals("Failed")).ToList();
+                IntegrationDllResult.DllName = sArray[sArray.Length - 1];
 
                 var counters = doc.Descendants(ns + "ResultSummary").FirstOrDefault().Descendants(ns + "Counters").FirstOrDefault();
-                integrationDll.TotalTestNum = Int32.Parse(counters.Attribute("total").Value);
-                integrationDll.PassedTestNum = Int32.Parse(counters.Attribute("passed").Value);
-                integrationDll.FailedTestNum = Int32.Parse(counters.Attribute("failed").Value);
+                IntegrationDllResult.TotalTestNum = Int32.Parse(counters.Attribute("total").Value);
+                IntegrationDllResult.PassedTestNum = Int32.Parse(counters.Attribute("passed").Value);
+                IntegrationDllResult.FailedTestNum = Int32.Parse(counters.Attribute("failed").Value);
 
             }
             catch (Exception ex)
@@ -157,7 +204,7 @@ namespace WTE_Assistant
                 throw new Exception("Error while parsing Trx file '" + DllResultFile.FullName + "'\nException: " + ex.ToString());
             }
 
-            return integrationDll;
+            return IntegrationDllResult;
         }
 
     }
