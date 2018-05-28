@@ -39,10 +39,20 @@ namespace WTE_Assistant
         /// <param name="IntegrationDlls"></param>
         public void ResetFailedTests(List<IntegrationDll> IntegrationDlls, int resetTime)
         {
-            foreach(var IntegrationDll in IntegrationDlls)
+            foreach(IntegrationDll integrationDll in IntegrationDlls)
             {
-
+               foreach(Test test in integrationDll.FailedTests)
+                {
+                    //1. 判断是否是Side by side的环境
+                    //2. 初始化reset命令
+                    //3. reset case，并收集结果
+                    //4. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
+                    //5. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
+                }            
+               
             }
+
+            //输出结果到UI （Html或者WPF界面）
         }
 
         /// <summary>
@@ -144,7 +154,7 @@ namespace WTE_Assistant
             }
             catch (Exception ex)
             {
-                throw new Exception("Error while parsing Trx file '" + DllResultFile.FullName);
+                throw new Exception("Error while parsing Trx file '" + DllResultFile.FullName + "'\nException: " + ex.ToString());
             }
 
             return integrationDll;
