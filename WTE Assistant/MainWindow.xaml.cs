@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MaterialDesignThemes.Wpf;
 
 namespace WTE_Assistant
 {
@@ -23,6 +25,10 @@ namespace WTE_Assistant
         public MainWindow()
         {
             InitializeComponent();
+            this.ResetProgress.Visibility = Visibility.Hidden;
+            this.DllInfor.Visibility = Visibility.Hidden;
+            this.Results.Visibility = Visibility.Hidden;
+            this.Running.Visibility = Visibility.Hidden;
         }
 
         private void ColorZone_MouseMove(object sender, MouseEventArgs e)
@@ -40,11 +46,20 @@ namespace WTE_Assistant
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            int resetTime = Int32.Parse(this.ResetTime.SelectedValue.ToString());
-            string vsLocation = this.VSLocation.ToString();
+            int ResetTime = Int32.Parse(this.ResetTime.Text);
+            string VSLocation = this.VSLocation.Text;
 
-            WTEHelper wteHelper = new WTEHelper(resetTime, vsLocation);
-            wteHelper.Start();
+            if (Directory.Exists(VSLocation) && File.Exists(VSLocation+ "\\Common7\\IDE\\devenv.exe"))
+            {
+                WTEHelper WTEHelper = new WTEHelper(ResetTime, VSLocation);
+                WTEHelper.Start();
+            }
+            else
+            {
+                ErrorPage errorPage = new ErrorPage();
+                errorPage.Show();
+            }
+
         }
     }
 }
