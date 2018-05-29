@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -50,8 +51,12 @@ namespace WTE_Assistant
         {
             foreach (IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
             {
+                //TODO: update UI, show dll name in DllInfo lable and Results lable
+
                 foreach (TestResult test in IntegrationDllResult.FailedTestResults)
                 {
+                    //TODO: update UI, show test name in running lable
+
                     //1. reset case，并收集结果
                     //2. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
                     //3. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
@@ -73,6 +78,17 @@ namespace WTE_Assistant
                     }
                 }
             }
+        }
+
+        public static void UpdateDllInfo(IntegrationDllResult IntegrationDllResult)
+        {
+            string dllName = IntegrationDllResult.DllName;
+            string results = string.Format("Results: {0}/{1} passed; {2} failed; {3} not executed.", IntegrationDllResult.PassedTestNum, IntegrationDllResult.TotalTestNum, IntegrationDllResult.FailedTestNum, IntegrationDllResult.NotExecutedTestNum);
+
+            App.Current.Dispatcher.Invoke(new Action(() =>
+            {
+
+            }));
         }
 
         /// <summary>
@@ -105,8 +121,8 @@ namespace WTE_Assistant
                 p.StartInfo.UseShellExecute = false;   // 是否使用外壳程序   
                 p.StartInfo.CreateNoWindow = true;   //是否在新窗口中启动该进程的值   
                 p.StartInfo.RedirectStandardInput = true;  // 重定向输入流   
-                p.StartInfo.RedirectStandardOutput = true;  //重定向输出流   
-                p.StartInfo.RedirectStandardError = true;  //重定向错误流  
+                p.StartInfo.RedirectStandardOutput = false;  //重定向输出流   
+                p.StartInfo.RedirectStandardError = false;  //重定向错误流  
                 p.StartInfo.FileName = CmdPath;
                 p.Start();
 
@@ -127,31 +143,18 @@ namespace WTE_Assistant
         /// <param name="test"></param>
         public void UpdateTestResult(TestResult test)
         {
-            TestResult newTestResult = new TestResult();
+            IntegrationDllResult integrationDllResult = new IntegrationDllResult();
 
             DirectoryInfo TestResultsDirInfo = new DirectoryInfo(SingleTestResultsDir);
             FileInfo[] filesInfo = TestResultsDirInfo.GetFiles("*.trx");
 
             if (filesInfo.Length > 0)
             {
-                string newResultPath = filesInfo[0].FullName;
+                integrationDllResult = GetIntegrationDllResult(filesInfo[0]);
 
-                try
-                {
-                    XNamespace ns = @"http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-                    var doc = XDocument.Load(newResultPath);
-
-
-
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error while parsing Trx file '" + newTestResult.AssemblyPathName + "'\nException: " + ex.ToString());
-                }
-            }
-            else
-            {
-                //do nothing
+                test.Outcome = integrationDllResult.TestResults[0].Outcome;
+                test.ErrorMessage = integrationDllResult.TestResults[0].ErrorMessage;
+                test.StackTrace = integrationDllResult.TestResults[0].StackTrace;
             }
 
         }
@@ -276,7 +279,12 @@ namespace WTE_Assistant
                     FileInfo fi = new FileInfo(d);
                     if (fi.Attributes.ToString().IndexOf("ReadOnly") != -1)
                         fi.Attributes = FileAttributes.Normal;
-                    File.Delete(d);     //删除文件   
+                    try
+                    {
+                        File.Delete(d);     //删除文件  
+                    }
+                    catch { }
+
                 }
                 else
                     DeleteFolderFiles(d);    //删除文件夹
