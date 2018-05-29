@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,9 +13,14 @@ namespace WTE_Assistant
     public class WTEHelper
     {
         public static string HOMEDRIVE = System.Environment.GetEnvironmentVariable("HOMEDRIVE");
-        public static string WOR = System.Environment.GetEnvironmentVariable("WOR");
-        public static string IntegrationTestsDir = HOMEDRIVE + "\\TestBin\\IntegrationTests\\";
-        public static string TestResultsDir = IntegrationTestsDir + "\\TestResults\\";
+        public static string WOR = HOMEDRIVE + @"\School\";
+        public static string CmdPath = System.Environment.GetEnvironmentVariable("ComSpec");
+
+        public static string IntegrationTestsDir = HOMEDRIVE + @"\TestBin\IntegrationTests\";
+        public static string IntegrationTestResultsDir = IntegrationTestsDir + @"\TestResults\";
+        public static string SingleTestDir = HOMEDRIVE + @"\TestBin\SingleTest\";
+        public static string SingleTestResultsDir = SingleTestDir + @"\TestResults\";
+
         public static string VSTestConsoleEnd = @"\Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe";
 
         public string VSLocation = null;
@@ -26,11 +32,13 @@ namespace WTE_Assistant
             this.MaxResetTime = maxResetTime;
             this.VSLocation = vsLocation;
         }
-        
+
         public void Start()
         {
             List<IntegrationDllResult> IntegrationDllResults = GetIntegrationDllResults(GetDllResultFileList());
             ResetFailedTests(IntegrationDllResults);
+
+            //TODO: 输出结果到UI （Html或者WPF界面）
             ShowResults(IntegrationDllResults);
         }
 
@@ -40,22 +48,15 @@ namespace WTE_Assistant
         /// <param name="IntegrationDllResults"></param>
         public void ResetFailedTests(List<IntegrationDllResult> IntegrationDllResults)
         {
-            foreach(IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
+            foreach (IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
             {
-               foreach(TestResult test in IntegrationDllResult.FailedTestResults)
+                foreach (TestResult test in IntegrationDllResult.FailedTestResults)
                 {
-                    //1. 初始化reset命令
-                    StringBuilder resetCommand = new StringBuilder();
-                    resetCommand.Append("\"" + VSLocation + VSTestConsoleEnd + "\"");
-                    resetCommand.Append(" /TestCaseFilter:Name~" + test.TestName);
-                    resetCommand.Append(" \"" + IntegrationTestsDir + test.DllName + "\"");
-                    resetCommand.Append(" /logger:trx");
-
-                    //2. reset case，并收集结果
-                    //3. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
-                    //4. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
+                    //1. reset case，并收集结果
+                    //2. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
+                    //3. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
                     int resetTime = 1;
-                    while(resetTime <= MaxResetTime)
+                    while (resetTime <= MaxResetTime)
                     {
                         ResetFailedTest(test);
                         UpdateTestResult(test);
@@ -66,13 +67,12 @@ namespace WTE_Assistant
                             IntegrationDllResult.FailedTestNum--;
                             IntegrationDllResult.PassedTestNum++;
 
-                            //TODO: 继续reset下一条case
+                            //Skip while loop
+                            resetTime = MaxResetTime + 1;
                         }
-                    }                         
+                    }
                 }
             }
-
-            //TODO: 输出结果到UI （Html或者WPF界面）
         }
 
         /// <summary>
@@ -81,7 +81,44 @@ namespace WTE_Assistant
         /// <param name="test"></param>
         public void ResetFailedTest(TestResult test)
         {
-            //TODO: Implementation
+            //初始化SingleTestDir
+            if (!Directory.Exists(SingleTestDir))
+            {
+                //如果目录不存在则新建文件夹
+                Directory.CreateDirectory(SingleTestDir);
+            }
+            else
+            {
+                //如果目录已存在则删除目录下所有内容
+                DeleteFolderFiles(SingleTestDir);
+            }
+            
+            //初始化reset命令
+            StringBuilder resetCommand = new StringBuilder();
+            resetCommand.Append("\"" + VSLocation + VSTestConsoleEnd + "\"");
+            resetCommand.Append(" /TestCaseFilter:Name~" + test.TestName);
+            resetCommand.Append(" \"" + IntegrationTestsDir + test.DllName + "\"");
+            resetCommand.Append(" /logger:trx");
+
+            using (Process p = new Process())
+            {
+                p.StartInfo.UseShellExecute = false;   // 是否使用外壳程序   
+                p.StartInfo.CreateNoWindow = true;   //是否在新窗口中启动该进程的值   
+                p.StartInfo.RedirectStandardInput = true;  // 重定向输入流   
+                p.StartInfo.RedirectStandardOutput = true;  //重定向输出流   
+                p.StartInfo.RedirectStandardError = true;  //重定向错误流  
+                p.StartInfo.FileName = CmdPath;
+                p.Start();
+
+                p.StandardInput.WriteLine("cd " + SingleTestDir);
+
+                p.StandardInput.WriteLine(resetCommand);
+                p.StandardInput.AutoFlush = true;
+
+                p.WaitForExit();
+                p.Close();
+            }
+
         }
 
         /// <summary>
@@ -90,7 +127,33 @@ namespace WTE_Assistant
         /// <param name="test"></param>
         public void UpdateTestResult(TestResult test)
         {
-            //TODO: Implementation
+            TestResult newTestResult = new TestResult();
+
+            DirectoryInfo TestResultsDirInfo = new DirectoryInfo(SingleTestDir);
+            FileInfo[] filesInfo = TestResultsDirInfo.GetFiles("*.trx");
+
+            if (filesInfo.Length > 0)
+            {
+                newTestResult.AssemblyPathName = filesInfo[0].FullName;
+
+                try
+                {
+                    XNamespace ns = @"http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+                    var doc = XDocument.Load(newTestResult.AssemblyPathName);
+
+                    //TODO
+
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error while parsing Trx file '" + newTestResult.AssemblyPathName + "'\nException: " + ex.ToString());
+                }
+            }
+            else
+            {
+                //do nothing
+            }
+
         }
 
         /// <summary>
@@ -111,7 +174,7 @@ namespace WTE_Assistant
             List<FileInfo> DllResultFileList = new List<FileInfo>();
 
             //var files = Directory.GetFiles(TestResultsDir, "*.trx");
-            DirectoryInfo TestResultsDirInfo = new DirectoryInfo(TestResultsDir);
+            DirectoryInfo TestResultsDirInfo = new DirectoryInfo(IntegrationTestResultsDir);
             FileInfo[] filesInfo = TestResultsDirInfo.GetFiles("*.trx");
 
             //int index = 1;
@@ -205,6 +268,23 @@ namespace WTE_Assistant
             }
 
             return IntegrationDllResult;
+        }
+        
+        public static void DeleteFolderFiles(string directoryPath)
+        {
+            foreach (string d in Directory.GetFileSystemEntries(directoryPath))
+            {
+                if (File.Exists(d))
+                {
+                    FileInfo fi = new FileInfo(d);
+                    if (fi.Attributes.ToString().IndexOf("ReadOnly") != -1)
+                        fi.Attributes = FileAttributes.Normal;
+                    File.Delete(d);     //删除文件   
+                }
+                else
+                    DeleteFolderFiles(d);    //删除文件夹
+            }
+            
         }
 
     }
