@@ -92,7 +92,7 @@ namespace WTE_Assistant
                 //如果目录已存在则删除目录下所有内容
                 DeleteFolderFiles(SingleTestDir);
             }
-            
+
             //初始化reset命令
             StringBuilder resetCommand = new StringBuilder();
             resetCommand.Append("\"" + VSLocation + VSTestConsoleEnd + "\"");
@@ -112,7 +112,7 @@ namespace WTE_Assistant
 
                 p.StandardInput.WriteLine("cd " + SingleTestDir);
 
-                p.StandardInput.WriteLine(resetCommand);
+                p.StandardInput.WriteLine(resetCommand + "&exit");
                 p.StandardInput.AutoFlush = true;
 
                 p.WaitForExit();
@@ -129,19 +129,19 @@ namespace WTE_Assistant
         {
             TestResult newTestResult = new TestResult();
 
-            DirectoryInfo TestResultsDirInfo = new DirectoryInfo(SingleTestDir);
+            DirectoryInfo TestResultsDirInfo = new DirectoryInfo(SingleTestResultsDir);
             FileInfo[] filesInfo = TestResultsDirInfo.GetFiles("*.trx");
 
             if (filesInfo.Length > 0)
             {
-                newTestResult.AssemblyPathName = filesInfo[0].FullName;
+                string newResultPath = filesInfo[0].FullName;
 
                 try
                 {
                     XNamespace ns = @"http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-                    var doc = XDocument.Load(newTestResult.AssemblyPathName);
+                    var doc = XDocument.Load(newResultPath);
 
-                    //TODO
+
 
                 }
                 catch (Exception ex)
@@ -173,15 +173,12 @@ namespace WTE_Assistant
         {
             List<FileInfo> DllResultFileList = new List<FileInfo>();
 
-            //var files = Directory.GetFiles(TestResultsDir, "*.trx");
             DirectoryInfo TestResultsDirInfo = new DirectoryInfo(IntegrationTestResultsDir);
             FileInfo[] filesInfo = TestResultsDirInfo.GetFiles("*.trx");
 
-            //int index = 1;
             foreach (var file in filesInfo)
             {
                 DllResultFileList.Add(file);
-                //Console.WriteLine("{0}: {1}", index++, file);
             }
 
             return DllResultFileList;
@@ -269,7 +266,7 @@ namespace WTE_Assistant
 
             return IntegrationDllResult;
         }
-        
+
         public static void DeleteFolderFiles(string directoryPath)
         {
             foreach (string d in Directory.GetFileSystemEntries(directoryPath))
@@ -284,7 +281,7 @@ namespace WTE_Assistant
                 else
                     DeleteFolderFiles(d);    //删除文件夹
             }
-            
+
         }
 
     }
