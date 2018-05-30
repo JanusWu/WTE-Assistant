@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using System.Windows;
 
 namespace WTE_Assistant
 {
@@ -40,7 +41,7 @@ namespace WTE_Assistant
             ResetFailedTests(IntegrationDllResults);
 
             //TODO: 输出结果到UI （Html或者WPF界面）
-            ShowResults(IntegrationDllResults);
+            //ShowResults(IntegrationDllResults);
         }
 
         /// <summary>
@@ -51,11 +52,22 @@ namespace WTE_Assistant
         {
             foreach (IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
             {
-                //TODO: update UI, show dll name in DllInfo lable and Results lable
+                //update UI, show dll name in DllInfo lable and Results lable
+                MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+                {
+                    MainWindow.main.ResetProgress.Visibility = Visibility.Visible;
+                    MainWindow.main.DllName.Visibility = Visibility.Visible;
+                    MainWindow.main.DllResults.Visibility = Visibility.Visible;
+                    MainWindow.main.RunningTest.Visibility = Visibility.Visible;
+                }));
+                UpdateDllInfo(IntegrationDllResult);
+
+                int progress = 1;
 
                 foreach (TestResult test in IntegrationDllResult.FailedTestResults)
                 {
-                    //TODO: update UI, show test name in running lable
+                    //update UI, show test name in running lable nad update ProgressBar
+                    UpdateRunningTest(test, progress, IntegrationDllResult.FailedTestNum);
 
                     //1. reset case，并收集结果
                     //2. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
@@ -63,8 +75,11 @@ namespace WTE_Assistant
                     int resetTime = 1;
                     while (resetTime <= MaxResetTime)
                     {
-                        ResetFailedTest(test);
-                        UpdateTestResult(test);
+                        //ResetFailedTest(test);
+                        //UpdateTestResult(test);
+
+                        Thread.Sleep(100);
+
                         resetTime++;
 
                         if (test.Outcome.Equals("Passed"))
@@ -77,17 +92,39 @@ namespace WTE_Assistant
                         }
                     }
                 }
+
+                //Update UI, Hide these lables and Progressbar
+                MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+                {
+                    MainWindow.main.ResetProgress.Visibility = Visibility.Hidden;
+                    MainWindow.main.DllName.Visibility = Visibility.Hidden;
+                    MainWindow.main.DllResults.Visibility = Visibility.Hidden;
+                    MainWindow.main.RunningTest.Visibility = Visibility.Hidden;
+                }));
             }
+
+            //Update UI, reset start button
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {
+                MainWindow.main.StartButton.Content = "START";
+                MainWindow.main.StartButton.FontSize = 24;
+                MainWindow.main.StartButton.IsEnabled = true;
+            }));
         }
 
-        public static void UpdateDllInfo(IntegrationDllResult IntegrationDllResult)
+        public void UpdateDllInfo(IntegrationDllResult IntegrationDllResult)
         {
-            string dllName = IntegrationDllResult.DllName;
-            string results = string.Format("Results: {0}/{1} passed; {2} failed; {3} not executed.", IntegrationDllResult.PassedTestNum, IntegrationDllResult.TotalTestNum, IntegrationDllResult.FailedTestNum, IntegrationDllResult.NotExecutedTestNum);
-
-            App.Current.Dispatcher.Invoke(new Action(() =>
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {                
+                MainWindow.main.DllNameValue = "DLL: " + IntegrationDllResult.DllName;
+            }));
+        }
+        public void UpdateRunningTest(TestResult test, int progress, int failedTestNum)
+        {
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
             {
-
+                MainWindow.main.RunningTestValue = "Running Test: " + test.TestName;
+                MainWindow.main.ResetProgressValue = progress / failedTestNum;
             }));
         }
 

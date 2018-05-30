@@ -45,7 +45,7 @@
             <ComboBoxItem>5</ComboBoxItem>
         </ComboBox>
         <!--Start button-->
-        <Button Grid.Row="3" FontSize="24" Width="120" Height="40" Margin="0 50 0 40" Style="{StaticResource MaterialDesignRaisedButton}" 
+        <Button Name="StartButton" Grid.Row="3" FontSize="24" Width="150" Height="40" Margin="0 50 0 40" Style="{StaticResource MaterialDesignRaisedButton}" 
                 materialDesign:ShadowAssist.ShadowDepth="Depth3" Click="StartButton_Click">
             START
         </Button>
@@ -53,9 +53,9 @@
         <ProgressBar Name="ResetProgress" Grid.Row="4" Value="60" Margin="10 0 10 0" materialDesign:TransitionAssist.DisableTransitions="True" />
         <!--Progress Information-->
         <Grid Grid.Row="5" Margin="14 0 14 0">
-            <Label Name="DllInfor" Grid.Row="0" FontSize="10">DLL: Microsoft.VisualStudio.Web.Editors.IntegrationTests.dll</Label>
-            <Label Name="Results" Grid.Row="1" Margin="0 15" FontSize="10">Results: 346/460 passed; 81 failed; 23 not executed.</Label>
-            <Label Name="Running" Grid.Row="2" Margin="0 30" FontSize="10">Running Test: VSTest_Html_FormatOnPaste_WithMultipleScriptBlocks</Label>
+            <Label Name="DllName" Grid.Row="0" FontSize="10">DLL: Microsoft.VisualStudio.Web.Editors.IntegrationTests.dll</Label>
+            <Label Name="DllResults" Grid.Row="1" Margin="0 15" FontSize="10">Results: 346/460 passed; 81 failed; 23 not executed.</Label>
+            <Label Name="RunningTest" Grid.Row="2" Margin="0 30" FontSize="10">Running Test: VSTest_Html_FormatOnPaste_WithMultipleScriptBlocks</Label>
             <Label Name="Version" Grid.Row="2" Margin="0 30" FontSize="10" HorizontalAlignment="Right">Copyright 2018 CTI. Version 1.0.0528</Label>
         </Grid>
 
