@@ -56,8 +56,7 @@ namespace WTE_Assistant
                 Dispatcher.Invoke(new Action(() => { this.RunningTest.Content = value; }));
             }
         }
-
-
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -67,7 +66,7 @@ namespace WTE_Assistant
             this.DllName.Visibility = Visibility.Hidden;
             this.DllResults.Visibility = Visibility.Hidden;
             this.RunningTest.Visibility = Visibility.Hidden;
-            this.VSLocation.Text = @"D:\Program Files (x86)\Microsoft Visual Studio 15.0";
+            this.VSLocation.Text = @"D:\Microsoft Visual Studio\2017\Community";
         }
 
         private void ColorZone_MouseMove(object sender, MouseEventArgs e)
@@ -90,6 +89,7 @@ namespace WTE_Assistant
 
             if (Directory.Exists(VSLocation) && File.Exists(VSLocation + "\\Common7\\IDE\\devenv.exe"))
             {
+                //Set the status to RUNNING
                 this.StartButton.Content = "RUNNING";
                 this.StartButton.FontSize = 18;
                 //this.StartButton.Foreground = Brushes.Yellow;

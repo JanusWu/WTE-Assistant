@@ -44,135 +44,7 @@ namespace WTE_Assistant
             //ShowResults(IntegrationDllResults);
         }
 
-        /// <summary>
-        /// Reset all failed tests
-        /// </summary>
-        /// <param name="IntegrationDllResults"></param>
-        public void ResetFailedTests(List<IntegrationDllResult> IntegrationDllResults)
-        {
-            foreach (IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
-            {
-                //update UI, show dll name in DllInfo lable and Results lable
-                MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
-                {
-                    MainWindow.main.ResetProgress.Visibility = Visibility.Visible;
-                    MainWindow.main.DllName.Visibility = Visibility.Visible;
-                    MainWindow.main.DllResults.Visibility = Visibility.Visible;
-                    MainWindow.main.RunningTest.Visibility = Visibility.Visible;
-                }));
-                UpdateDllInfo(IntegrationDllResult);
-
-                int progress = 1;
-
-                foreach (TestResult test in IntegrationDllResult.FailedTestResults)
-                {
-                    //update UI, show test name in running lable nad update ProgressBar
-                    UpdateRunningTest(test, progress, IntegrationDllResult.FailedTestNum);
-
-                    //1. reset case，并收集结果
-                    //2. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
-                    //3. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
-                    int resetTime = 1;
-                    while (resetTime <= MaxResetTime)
-                    {
-                        //ResetFailedTest(test);
-                        //UpdateTestResult(test);
-
-                        Thread.Sleep(100);
-
-                        resetTime++;
-
-                        if (test.Outcome.Equals("Passed"))
-                        {
-                            IntegrationDllResult.FailedTestNum--;
-                            IntegrationDllResult.PassedTestNum++;
-
-                            //Skip while loop
-                            resetTime = MaxResetTime + 1;
-                        }
-                    }
-                }
-
-                //Update UI, Hide these lables and Progressbar
-                MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
-                {
-                    MainWindow.main.ResetProgress.Visibility = Visibility.Hidden;
-                    MainWindow.main.DllName.Visibility = Visibility.Hidden;
-                    MainWindow.main.DllResults.Visibility = Visibility.Hidden;
-                    MainWindow.main.RunningTest.Visibility = Visibility.Hidden;
-                }));
-            }
-
-            //Update UI, reset start button
-            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
-            {
-                MainWindow.main.StartButton.Content = "START";
-                MainWindow.main.StartButton.FontSize = 24;
-                MainWindow.main.StartButton.IsEnabled = true;
-            }));
-        }
-
-        public void UpdateDllInfo(IntegrationDllResult IntegrationDllResult)
-        {
-            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
-            {                
-                MainWindow.main.DllNameValue = "DLL: " + IntegrationDllResult.DllName;
-            }));
-        }
-        public void UpdateRunningTest(TestResult test, int progress, int failedTestNum)
-        {
-            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
-            {
-                MainWindow.main.RunningTestValue = "Running Test: " + test.TestName;
-                MainWindow.main.ResetProgressValue = progress / failedTestNum;
-            }));
-        }
-
-        /// <summary>
-        /// Reset Failed Test
-        /// </summary>
-        /// <param name="test"></param>
-        public void ResetFailedTest(TestResult test)
-        {
-            //初始化SingleTestDir
-            if (!Directory.Exists(SingleTestDir))
-            {
-                //如果目录不存在则新建文件夹
-                Directory.CreateDirectory(SingleTestDir);
-            }
-            else
-            {
-                //如果目录已存在则删除目录下所有内容
-                DeleteFolderFiles(SingleTestDir);
-            }
-
-            //初始化reset命令
-            StringBuilder resetCommand = new StringBuilder();
-            resetCommand.Append("\"" + VSLocation + VSTestConsoleEnd + "\"");
-            resetCommand.Append(" /TestCaseFilter:Name~" + test.TestName);
-            resetCommand.Append(" \"" + IntegrationTestsDir + test.DllName + "\"");
-            resetCommand.Append(" /logger:trx");
-
-            using (Process p = new Process())
-            {
-                p.StartInfo.UseShellExecute = false;   // 是否使用外壳程序   
-                p.StartInfo.CreateNoWindow = true;   //是否在新窗口中启动该进程的值   
-                p.StartInfo.RedirectStandardInput = true;  // 重定向输入流   
-                p.StartInfo.RedirectStandardOutput = false;  //重定向输出流   
-                p.StartInfo.RedirectStandardError = false;  //重定向错误流  
-                p.StartInfo.FileName = CmdPath;
-                p.Start();
-
-                p.StandardInput.WriteLine("cd " + SingleTestDir);
-
-                p.StandardInput.WriteLine(resetCommand + "&exit");
-                p.StandardInput.AutoFlush = true;
-
-                p.WaitForExit();
-                p.Close();
-            }
-
-        }
+        #region Get Results，Reset Failed Test and Show Final Results
 
         /// <summary>
         /// Read the new trx file and update the test result
@@ -194,15 +66,6 @@ namespace WTE_Assistant
                 test.StackTrace = integrationDllResult.TestResults[0].StackTrace;
             }
 
-        }
-
-        /// <summary>
-        /// Show all results on UI
-        /// </summary>
-        /// <param name="IntegrationDllResults"></param>
-        public void ShowResults(List<IntegrationDllResult> IntegrationDllResults)
-        {
-            //TODO: Implementation
         }
 
         /// <summary>
@@ -307,6 +170,191 @@ namespace WTE_Assistant
             return IntegrationDllResult;
         }
 
+        /// <summary>
+        /// Reset all failed tests
+        /// </summary>
+        /// <param name="IntegrationDllResults"></param>
+        public void ResetFailedTests(List<IntegrationDllResult> IntegrationDllResults)
+        {
+            foreach (IntegrationDllResult IntegrationDllResult in IntegrationDllResults)
+            {
+                //update UI, show dll name in DllInfo lable and Results lable
+                UpdateDllInfo(IntegrationDllResult);
+
+                int ResetedTestNum = 1;
+
+                foreach (TestResult test in IntegrationDllResult.FailedTestResults)
+                {
+                    //update UI, show test name in running lable nad update ProgressBar
+                    ResetedTestNum++;
+                    UpdateRunningTest(test, ResetedTestNum, IntegrationDllResult);
+
+                    //1. reset case，并收集结果
+                    //2. 判断结果是passed还是failed，如果是passed，则将该case从failedTests中移除，并且passednum+1， failednum-1，然后继续reset下一条case
+                    //3. 如果结果仍是failed，根据rest次数，再去reset case. 如果超出reset次数，那么继续reset下一条case
+                    int resetTime = 1;
+                    while (resetTime <= MaxResetTime)
+                    {
+                        //ResetFailedTest(test);
+                        //UpdateTestResult(test);
+
+                        Thread.Sleep(100);
+
+                        resetTime++;
+
+                        if (test.Outcome.Equals("Passed"))
+                        {
+                            IntegrationDllResult.FailedTestNum--;
+                            IntegrationDllResult.PassedTestNum++;
+
+                            //Skip while loop
+                            resetTime = MaxResetTime + 1;
+                        }
+                    }
+                }
+
+                //Update UI, Hide these lables and Progressbar
+                HidenInfo();
+            }
+
+            //Update UI, reset start button
+            ResetStartButton();
+        }
+
+        /// <summary>
+        /// Reset Failed Test
+        /// </summary>
+        /// <param name="test"></param>
+        public void ResetFailedTest(TestResult test)
+        {
+            //初始化SingleTestDir
+            if (!Directory.Exists(SingleTestDir))
+            {
+                //如果目录不存在则新建文件夹
+                Directory.CreateDirectory(SingleTestDir);
+            }
+            else
+            {
+                //如果目录已存在则删除目录下所有内容
+                DeleteFolderFiles(SingleTestDir);
+            }
+
+            //初始化reset命令
+            StringBuilder resetCommand = new StringBuilder();
+            resetCommand.Append("\"" + VSLocation + VSTestConsoleEnd + "\"");
+            resetCommand.Append(" /TestCaseFilter:Name~" + test.TestName);
+            resetCommand.Append(" \"" + IntegrationTestsDir + test.DllName + "\"");
+            resetCommand.Append(" /logger:trx");
+
+            using (Process p = new Process())
+            {
+                p.StartInfo.UseShellExecute = false;   // 是否使用外壳程序   
+                p.StartInfo.CreateNoWindow = true;   //是否在新窗口中启动该进程的值   
+                p.StartInfo.RedirectStandardInput = true;  // 重定向输入流   
+                p.StartInfo.RedirectStandardOutput = false;  //重定向输出流   
+                p.StartInfo.RedirectStandardError = false;  //重定向错误流  
+                p.StartInfo.FileName = CmdPath;
+                p.Start();
+
+                p.StandardInput.WriteLine("cd " + SingleTestDir);
+
+                p.StandardInput.WriteLine(resetCommand + "&exit");
+                p.StandardInput.AutoFlush = true;
+
+                p.WaitForExit();
+                p.Close();
+            }
+
+        }
+
+        /// <summary>
+        /// Show all results on UI
+        /// </summary>
+        /// <param name="IntegrationDllResults"></param>
+        public void ShowResults(List<IntegrationDllResult> IntegrationDllResults)
+        {
+            //TODO: Implementation
+        }
+
+        #endregion
+
+        #region UI Update
+
+        /// <summary>
+        /// Set all information controls visible and set Dll info
+        /// </summary>
+        /// <param name="IntegrationDllResult"></param>
+        public void UpdateDllInfo(IntegrationDllResult IntegrationDllResult)
+        {
+            string resultsValue = string.Format("Results: {0}/{1} passed; {2} failed; {3} not executed.",
+                IntegrationDllResult.PassedTestNum, IntegrationDllResult.TotalTestNum, IntegrationDllResult.FailedTestNum, IntegrationDllResult.NotExecutedTestNum);
+
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {
+                MainWindow.main.ResetProgress.Visibility = Visibility.Visible;
+                MainWindow.main.DllName.Visibility = Visibility.Visible;
+                MainWindow.main.DllResults.Visibility = Visibility.Visible;
+                MainWindow.main.RunningTest.Visibility = Visibility.Visible;
+
+                MainWindow.main.DllNameValue = "DLL: " + IntegrationDllResult.DllName;
+                MainWindow.main.DllResultsValue = resultsValue;
+            }));
+        }
+
+        /// <summary>
+        /// Update Results and Running Test and ProgressBar value
+        /// </summary>
+        /// <param name="test"></param>
+        /// <param name="ResetedTestNum"></param>
+        /// <param name="IntegrationDllResult"></param>
+        public void UpdateRunningTest(TestResult test, double ResetedTestNum, IntegrationDllResult IntegrationDllResult)
+        {
+            string resultsValue = string.Format("Results: {0}/{1} passed; {2} failed; {3} not executed.",
+                IntegrationDllResult.PassedTestNum, IntegrationDllResult.TotalTestNum, IntegrationDllResult.FailedTestNum, IntegrationDllResult.NotExecutedTestNum);
+
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {
+                MainWindow.main.DllResultsValue = resultsValue;
+                MainWindow.main.RunningTestValue = "Running Test: " + test.TestName;
+                MainWindow.main.ResetProgressValue = (ResetedTestNum / IntegrationDllResult.FailedTestNum) * 100;
+            }));
+        }
+
+        /// <summary>
+        /// Hide all information control after all failed tests have been reset
+        /// </summary>
+        public void HidenInfo()
+        {
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {
+                MainWindow.main.ResetProgress.Visibility = Visibility.Hidden;
+                MainWindow.main.DllName.Visibility = Visibility.Hidden;
+                MainWindow.main.DllResults.Visibility = Visibility.Hidden;
+                MainWindow.main.RunningTest.Visibility = Visibility.Hidden;
+            }));
+        }
+
+        /// <summary>
+        /// Reset Start button from RUNNING
+        /// </summary>
+        public void ResetStartButton()
+        {
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {
+                MainWindow.main.StartButton.Content = "START";
+                MainWindow.main.StartButton.FontSize = 24;
+                MainWindow.main.StartButton.IsEnabled = true;
+            }));
+        }
+
+        #endregion
+
+        #region Other Method
+
+        /// <summary>
+        /// Delete all files and folders under a folder
+        /// </summary>
+        /// <param name="directoryPath"></param>
         public static void DeleteFolderFiles(string directoryPath)
         {
             foreach (string d in Directory.GetFileSystemEntries(directoryPath))
@@ -328,6 +376,8 @@ namespace WTE_Assistant
             }
 
         }
+
+        #endregion
 
     }
 }
