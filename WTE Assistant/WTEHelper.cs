@@ -41,7 +41,14 @@ namespace WTE_Assistant
             ResetFailedTests(IntegrationDllResults);
 
             //TODO: 输出结果到UI （Html或者WPF界面）
-            //ShowResults(IntegrationDllResults);
+            //results = IntegrationDllResults;
+            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            {
+                DetailReport detailReport = new DetailReport();
+                detailReport.IntegrationDllResults = IntegrationDllResults;
+                detailReport.Show();                
+            }));
+            
         }
 
         #region Get Results，Reset Failed Test and Show Final Results
@@ -198,7 +205,7 @@ namespace WTE_Assistant
                         //ResetFailedTest(test);
                         //UpdateTestResult(test);
 
-                        Thread.Sleep(100);
+                        //Thread.Sleep(100);
 
                         resetTime++;
 
@@ -274,6 +281,11 @@ namespace WTE_Assistant
         public void ShowResults(List<IntegrationDllResult> IntegrationDllResults)
         {
             //TODO: Implementation
+            DetailReport detailReport = new DetailReport();
+            //detailReport.IntegrationDllResults = IntegrationDllResults;
+
+            
+            
         }
 
         #endregion

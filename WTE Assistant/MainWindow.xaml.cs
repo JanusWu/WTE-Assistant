@@ -66,7 +66,7 @@ namespace WTE_Assistant
             this.DllName.Visibility = Visibility.Hidden;
             this.DllResults.Visibility = Visibility.Hidden;
             this.RunningTest.Visibility = Visibility.Hidden;
-            this.VSLocation.Text = @"D:\Microsoft Visual Studio\2017\Community";
+            this.VSLocation.Text = @"C:\Program Files (x86)\Microsoft Visual Studio\Preview\Enterprise";
         }
 
         private void ColorZone_MouseMove(object sender, MouseEventArgs e)

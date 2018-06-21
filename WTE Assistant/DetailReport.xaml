@@ -1,0 +1,59 @@
+﻿<Window x:Class="WTE_Assistant.DetailReport"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:WTE_Assistant"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        mc:Ignorable="d"
+        Style="{StaticResource for_noresize_window}"
+        Title="DetailReport" Height="450" Width="800" WindowStyle="None" Loaded="Window_Loaded">
+    <Grid>
+        <!--<Label FontSize="23">Summary</Label>
+        <ListView Name="ResultsSummary" Margin="10 50">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding DllName}" Header="Dll"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding TotalTestNum}" Header="Total"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding PassedTestNum}" Header="Passed"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding FailedTestNum}" Header="Failed"/>
+                    <GridViewColumn Header="Reset Passed"/>
+                    --><!--<GridViewColumn DisplayMemberBinding="{Binding }" Header="Detail"/>--><!--
+                </GridView>
+            </ListView.View>
+        </ListView>-->
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--Custom Windows Title Bar-->
+        <materialDesign:ColorZone Mode="PrimaryDark" Grid.Row="0" Margin="0" Padding="24 8" materialDesign:ShadowAssist.ShadowDepth="Depth3" MouseMove="ColorZone_MouseMove">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24">Test Report</TextBlock>
+                
+            </StackPanel>
+        </materialDesign:ColorZone>
+        <Label Name="Add" Grid.Row="0" Width="30" FontSize="16" Padding="10 15" Margin="0 0 30 0" Foreground="White" HorizontalAlignment="Right">+</Label>
+        <Label Name="Close" Grid.Row="0" Width="30" FontSize="16" Padding="10 15" Foreground="White" HorizontalAlignment="Right" MouseDown="Close_MouseDown">X</Label>
+        
+        <!--Summary-->
+        <GroupBox Header="Summary" Grid.Row="1" Style="{DynamicResource MaterialDesignGroupBox}" Margin="5"
+            materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0">
+        </GroupBox>
+        
+        <!--Details-->
+        <GroupBox Header="Details" Grid.Row="2" Style="{DynamicResource MaterialDesignGroupBox}" Margin="5"
+            materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0">
+        </GroupBox>
+    </Grid>
+</Window>
