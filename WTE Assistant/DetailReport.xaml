@@ -15,7 +15,7 @@
         mc:Ignorable="d"
         Style="{StaticResource for_noresize_window}"
         Title="DetailReport" Height="450" Width="800" WindowStyle="None" Loaded="Window_Loaded">
-    <Grid>
+    <Grid x:Name="detailreport">
         <!--<Label FontSize="23">Summary</Label>
         <ListView Name="ResultsSummary" Margin="10 50">
             <ListView.View>
@@ -25,7 +25,9 @@
                     <GridViewColumn DisplayMemberBinding="{Binding PassedTestNum}" Header="Passed"/>
                     <GridViewColumn DisplayMemberBinding="{Binding FailedTestNum}" Header="Failed"/>
                     <GridViewColumn Header="Reset Passed"/>
-                    --><!--<GridViewColumn DisplayMemberBinding="{Binding }" Header="Detail"/>--><!--
+                    -->
+        <!--<GridViewColumn DisplayMemberBinding="{Binding }" Header="Detail"/>-->
+        <!--
                 </GridView>
             </ListView.View>
         </ListView>-->
@@ -40,20 +42,32 @@
         <materialDesign:ColorZone Mode="PrimaryDark" Grid.Row="0" Margin="0" Padding="24 8" materialDesign:ShadowAssist.ShadowDepth="Depth3" MouseMove="ColorZone_MouseMove">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24">Test Report</TextBlock>
-                
             </StackPanel>
         </materialDesign:ColorZone>
-        <Label Name="Add" Grid.Row="0" Width="30" FontSize="16" Padding="10 15" Margin="0 0 30 0" Foreground="White" HorizontalAlignment="Right">+</Label>
+        <Label Name="Maximization" Grid.Row="0" Width="30" FontSize="16" Padding="10 15" Margin="0 0 30 0" Foreground="White" HorizontalAlignment="Right" MouseDown="Maximization_MouseDown">+</Label>
         <Label Name="Close" Grid.Row="0" Width="30" FontSize="16" Padding="10 15" Foreground="White" HorizontalAlignment="Right" MouseDown="Close_MouseDown">X</Label>
-        
+
         <!--Summary-->
         <GroupBox Header="Summary" Grid.Row="1" Style="{DynamicResource MaterialDesignGroupBox}" Margin="5"
             materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0">
+            <DataGrid Name="summaryDataGrid" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8"
+                SelectionChanged="summaryDataGrid_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding DllName}" Header="Dll Name"/>
+                    <DataGridTextColumn Binding="{Binding TotalTestNum}" Header="Total"/>
+                    <DataGridTextColumn Binding="{Binding PassedTestNum}" Header="Passed"/>
+                    <DataGridTextColumn Binding="{Binding FailedTestNum}" Header="Failed"/>
+                    <!--<DataGridTextColumn Binding="{Binding }" Header="Reset Passed"/>-->
+                </DataGrid.Columns>
+
+            </DataGrid>
         </GroupBox>
-        
+
         <!--Details-->
         <GroupBox Header="Details" Grid.Row="2" Style="{DynamicResource MaterialDesignGroupBox}" Margin="5"
             materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0">
+            <DataGrid Name="detailsDataGrid"></DataGrid>
         </GroupBox>
     </Grid>
 </Window>

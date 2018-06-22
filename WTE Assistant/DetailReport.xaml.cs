@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace WTE_Assistant
 {
@@ -24,12 +14,12 @@ namespace WTE_Assistant
         public DetailReport()
         {
             InitializeComponent();
-            
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //this.summaryDataGrid.ItemsSource = IntegrationDllResults;
+            this.summaryDataGrid.ItemsSource = IntegrationDllResults;
             //this.ResultsSummary.ItemsSource = IntegrationDllResults;
         }
 
@@ -44,6 +34,17 @@ namespace WTE_Assistant
         private void Close_MouseDown(object sender, MouseButtonEventArgs e)
         {
             this.Close();
+        }
+
+        private void Maximization_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.WindowState = WindowState.Maximized;
+        }
+
+        private void summaryDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            IntegrationDllResult integrationDllResult = this.summaryDataGrid.SelectedItem as IntegrationDllResult;
+            this.detailsDataGrid.ItemsSource = integrationDllResult.FailedTestResults;
         }
     }
 }
