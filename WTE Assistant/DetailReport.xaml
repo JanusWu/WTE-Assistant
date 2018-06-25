@@ -14,7 +14,7 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         mc:Ignorable="d"
         Style="{StaticResource for_noresize_window}"
-        Title="DetailReport" Height="450" Width="800" WindowStyle="None" Loaded="Window_Loaded">
+        Title="DetailReport" Height="900" Width="1200" WindowStyle="None" Loaded="Window_Loaded">
     <Grid x:Name="detailreport">
         <!--<Label FontSize="23">Summary</Label>
         <ListView Name="ResultsSummary" Margin="10 50">
@@ -67,7 +67,17 @@
         <!--Details-->
         <GroupBox Header="Details" Grid.Row="2" Style="{DynamicResource MaterialDesignGroupBox}" Margin="5"
             materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderThickness="0">
-            <DataGrid Name="detailsDataGrid"></DataGrid>
+            <!--<DataGrid Name="detailsDataGrid" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                materialDesign:DataGridAssist.CellPadding="0" materialDesign:DataGridAssist.ColumnHeaderPadding="8">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding TestName}" Header="Test Name" Width="150"/>
+                    <DataGridTextColumn Binding="{Binding Outcome}" Header="Outcome" Width="50"/>
+                    <DataGridTextColumn Binding="{Binding ErrorMessage}" Header="Error Message" Width="500"/>
+                    <DataGridTextColumn Binding="{Binding StackTrace}" Header="Stack Trace" Width="500"/>
+                </DataGrid.Columns>
+            </DataGrid>-->
+            
+            
         </GroupBox>
     </Grid>
 </Window>
