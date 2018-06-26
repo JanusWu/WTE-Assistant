@@ -9,12 +9,9 @@
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
         TextOptions.TextFormattingMode="Ideal" 
-        TextOptions.TextRenderingMode="Auto"        
-        Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}"
+        TextOptions.TextRenderingMode="Auto"
         mc:Ignorable="d"
-        Style="{StaticResource for_noresize_window}"
-        Title="DetailReport" Height="900" Width="1200" WindowStyle="None" Loaded="Window_Loaded">
+        Title="DetailReport" Height="900" Width="1200" Loaded="Window_Loaded">
     <Grid x:Name="detailreport">
         <!--<Label FontSize="23">Summary</Label>
         <ListView Name="ResultsSummary" Margin="10 50">

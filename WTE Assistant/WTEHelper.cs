@@ -44,9 +44,13 @@ namespace WTE_Assistant
             //results = IntegrationDllResults;
             MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
             {
-                DetailReport detailReport = new DetailReport();
-                detailReport.IntegrationDllResults = IntegrationDllResults;
-                detailReport.Show();                
+                //DetailReport detailReport = new DetailReport();
+                //detailReport.IntegrationDllResults = IntegrationDllResults;
+                //detailReport.Show(); 
+
+                ReportPage report = new ReportPage();
+                report.IntegrationDllResults = IntegrationDllResults;
+                report.Show();
             }));
             
         }

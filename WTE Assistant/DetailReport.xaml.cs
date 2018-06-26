@@ -44,7 +44,7 @@ namespace WTE_Assistant
         private void summaryDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             IntegrationDllResult integrationDllResult = this.summaryDataGrid.SelectedItem as IntegrationDllResult;
-            this.detailsDataGrid.ItemsSource = integrationDllResult.FailedTestResults;
+            //this.detailsDataGrid.ItemsSource = integrationDllResult.FailedTestResults;
         }
     }
 }
