@@ -18,6 +18,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!--Dll Summary-->
         <Label Grid.Column="0" Grid.Row="0" FontSize="14">Dll Summary</Label>
         <DataGrid Name="dllDataGrid" Grid.Column="0" Grid.Row="1" 
                   AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
@@ -30,6 +31,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
+        <!--Test List of a Dll-->
         <Label Grid.Column="0" Grid.Row="2" FontSize="14">Test List</Label>
         <DataGrid Name="testDataGrid" Grid.Column="0" Grid.Row="3" ScrollViewer.VerticalScrollBarVisibility="Visible" 
                   AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" 
@@ -39,6 +41,34 @@
                 <DataGridTextColumn Binding="{Binding TestName}" Header="Test Name"/>
             </DataGrid.Columns>
         </DataGrid>
+
+        <!--Test Result Details-->
+        <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Row="0" Grid.Column="0" Padding="0,0,5,0" Text="Test Name:"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TestName}"/>
+            <TextBox Grid.Row="0" Grid.Column="2" Padding="0,0,5,0" Text="Result:"/>
+            <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Outcome}"/>
+            <TextBox Grid.Row="0" Grid.Column="4" Padding="0,0,5,0" Text="Dll:"/>
+            <TextBox Grid.Row="0" Grid.Column="5" Text="{Binding DllName}"/>
+
+            <TreeView Name="resultTreeView" Grid.Row="1" Grid.ColumnSpan="6">
+
+            </TreeView>
+        </Grid>
+        
 
 
     </Grid>
