@@ -38,21 +38,27 @@ namespace WTE_Assistant
         public void Start()
         {
             List<IntegrationDllResult> IntegrationDllResults = GetIntegrationDllResults(GetDllResultFileList());
-            ResetFailedTests(IntegrationDllResults);
+            //ResetFailedTests(IntegrationDllResults);
+
+            foreach (IntegrationDllResult integrationDllResult in IntegrationDllResults)
+            {
+                //TODO: Output results to new trx file
+                WriteIntoFile(integrationDllResult);
+            }
 
             //TODO: 输出结果到UI （Html或者WPF界面）
             //results = IntegrationDllResults;
-            MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
-            {
-                //DetailReport detailReport = new DetailReport();
-                //detailReport.IntegrationDllResults = IntegrationDllResults;
-                //detailReport.Show(); 
+            //MainWindow.main.Dispatcher.Invoke(new Action(delegate ()
+            //{
+            //    //DetailReport detailReport = new DetailReport();
+            //    //detailReport.IntegrationDllResults = IntegrationDllResults;
+            //    //detailReport.Show(); 
 
-                ReportPage report = new ReportPage();
-                report.IntegrationDllResults = IntegrationDllResults;
-                report.Show();
-            }));
-            
+            //    ReportPage report = new ReportPage();
+            //    report.IntegrationDllResults = IntegrationDllResults;
+            //    report.Show();
+            //}));
+
         }
 
         #region Get Results，Reset Failed Test and Show Final Results
@@ -73,8 +79,8 @@ namespace WTE_Assistant
                 integrationDllResult = GetIntegrationDllResult(filesInfo[0]);
 
                 test.Outcome = integrationDllResult.TestResults[0].Outcome;
-                test.ErrorMessage = integrationDllResult.TestResults[0].ErrorMessage;
-                test.StackTrace = integrationDllResult.TestResults[0].StackTrace;
+                test.StdOut = integrationDllResult.TestResults[0].StdOut;
+                test.ErrorInfo = integrationDllResult.TestResults[0].ErrorInfo;
             }
 
         }
@@ -115,6 +121,29 @@ namespace WTE_Assistant
             return IntegrationDllResults;
         }
 
+        public void WriteIntoFile(IntegrationDllResult integrationDllResult)
+        {
+            XNamespace ns = @"http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+            var doc = XDocument.Load(integrationDllResult.ResultPath);
+
+            foreach (TestResult test in integrationDllResult.FailedTestResults)
+            {
+                var xElement = (from unitTestResult in doc.Descendants(ns + "UnitTestResult")
+                             where (string)unitTestResult.Attribute("testId") == test.TestID
+                             select unitTestResult).First();
+
+                //if test outcome changes, update the test result
+                if (!xElement.Attribute("outcome").Value.Equals(test.Outcome))
+                {
+                    xElement.Attribute("outcome").SetValue(test.Outcome);
+                    xElement.Element("StdOut").SetValue(test.StdOut);
+                    xElement.Element("ErrorInfo").Remove();
+                }                      
+            }
+
+            doc.Save(IntegrationTestResultsDir+integrationDllResult.DllName+".trx");
+        }
+
         /// <summary>
         /// Get result informations of one dll
         /// </summary>
@@ -123,50 +152,58 @@ namespace WTE_Assistant
         public IntegrationDllResult GetIntegrationDllResult(FileInfo DllResultFile)
         {
             IntegrationDllResult IntegrationDllResult = new IntegrationDllResult();
+            IntegrationDllResult.ResultPath = DllResultFile.FullName;
 
             try
             {
                 XNamespace ns = @"http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
                 var doc = XDocument.Load(DllResultFile.FullName);
 
+                //get test's execution codebase and classname
                 var testDefinitions = (from unitTest in doc.Descendants(ns + "UnitTest")
                                        select new
                                        {
-                                           executionId = unitTest.Element(ns + "Execution").Attribute("id").Value,
+                                           //executionId = unitTest.Element(ns + "Execution").Attribute("id").Value,
+                                           testid = unitTest.Attribute("id").Value,
                                            codeBase = unitTest.Element(ns + "TestMethod").Attribute("codeBase").Value,
-                                           className = unitTest.Element(ns + "TestMethod").Attribute("className").Value,
-                                           testName = unitTest.Element(ns + "TestMethod").Attribute("name").Value
+                                           className = unitTest.Element(ns + "TestMethod").Attribute("className").Value
                                        }
                              ).ToList();
 
+                //get dll name
                 string[] sArray = testDefinitions[0].codeBase.Split('\\');
                 IntegrationDllResult.DllName = sArray[sArray.Length - 1];
 
+                // get test's testid, testname, classname, outcome, stdout, errorinfo, duration, dllname and assembly path
                 var results = (from utr in doc.Descendants(ns + "UnitTestResult")
-                               let executionId = utr.Attribute("executionId").Value
-                               let message = utr.Descendants(ns + "Message").FirstOrDefault()
-                               let stackTrace = utr.Descendants(ns + "StackTrace").FirstOrDefault()
+                               //let executionId = utr.Attribute("executionId").Value
+                               let testid = utr.Attribute("testId").Value
+                               let stdout = utr.Descendants(ns + "StdOut").FirstOrDefault()
+                               let errorinfo = utr.Descendants(ns + "ErrorInfo").FirstOrDefault()
+                               //let duration = utr.Attribute("duration")
                                let st = DateTime.Parse(utr.Attribute("startTime").Value).ToUniversalTime()
                                let et = DateTime.Parse(utr.Attribute("endTime").Value).ToUniversalTime()
                                select new TestResult()
                                {
-                                   AssemblyPathName = (from td in testDefinitions where td.executionId == executionId select td.codeBase).Single(),
-                                   FullClassName = (from td in testDefinitions where td.executionId == executionId select td.className).Single(),
+                                   AssemblyPathName = (from td in testDefinitions where td.testid == testid select td.codeBase).Single(),
+                                   FullClassName = (from td in testDefinitions where td.testid == testid select td.className).Single(),
                                    Outcome = utr.Attribute("outcome").Value,
                                    TestName = utr.Attribute("testName").Value,
-                                   ErrorMessage = message == null ? "" : message.Value,
-                                   StackTrace = stackTrace == null ? "" : stackTrace.Value,
+                                   StdOut = stdout == null ? "" : stdout.Value,
+                                   ErrorInfo = errorinfo == null ? "" : errorinfo.Value,
+                                   //Duration = duration.Value == null ? "" : duration.Value,
                                    DllName = IntegrationDllResult.DllName,
-                                   TestID = executionId
+                                   TestID = testid
                                }
                                ).OrderBy(r => r.Outcome).
                                  ThenBy(r => r.TestName).
                                  ThenBy(r => r.FullClassName);
 
+                //get TestResults list and FailedTestResults list
                 IntegrationDllResult.TestResults = results.ToList();
                 IntegrationDllResult.FailedTestResults = IntegrationDllResult.TestResults.Where(n => n.Outcome.Equals("Failed")).ToList();
-                IntegrationDllResult.DllName = sArray[sArray.Length - 1];
 
+                // get results number for each outcome
                 var counters = doc.Descendants(ns + "ResultSummary").FirstOrDefault().Descendants(ns + "Counters").FirstOrDefault();
                 IntegrationDllResult.TotalTestNum = Int32.Parse(counters.Attribute("total").Value);
                 IntegrationDllResult.PassedTestNum = Int32.Parse(counters.Attribute("passed").Value);
@@ -206,8 +243,8 @@ namespace WTE_Assistant
                     int resetTime = 1;
                     while (resetTime <= MaxResetTime)
                     {
-                        //ResetFailedTest(test);
-                        //UpdateTestResult(test);
+                        ResetFailedTest(test);
+                        UpdateTestResult(test);
 
                         //Thread.Sleep(100);
 
@@ -272,7 +309,7 @@ namespace WTE_Assistant
                 p.StandardInput.WriteLine(resetCommand + "&exit");
                 p.StandardInput.AutoFlush = true;
 
-                p.WaitForExit();
+                p.WaitForExit(600000); //如果进程10分钟还没有结束，则强制结束进程
                 p.Close();
             }
 

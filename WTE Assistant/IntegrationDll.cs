@@ -12,6 +12,8 @@ namespace WTE_Assistant
 
         public string DllPath { get; set; }
 
+        public string ResultPath { get; set; }
+
         public int TotalTestNum { get; set; }
 
         public int PassedTestNum { get; set; }
@@ -23,6 +25,8 @@ namespace WTE_Assistant
         public List<TestResult> TestResults;
 
         public List<TestResult> FailedTestResults;
+
+        public List<TestResult> ResetPassResults;
     }
 
     public class TestResult
@@ -31,9 +35,11 @@ namespace WTE_Assistant
 
         public string TestID { get; set; }
 
-        public string ErrorMessage { get; set; }
+        public string StdOut { get; set; }
 
-        public string StackTrace { get; set; }
+        public string ErrorInfo { get; set; }
+
+        public string Duration { get; set; }
 
         public string DllName { get; set; }
 
